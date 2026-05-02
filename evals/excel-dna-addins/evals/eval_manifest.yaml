@@ -16,6 +16,8 @@ target_models:
 graders:
   deterministic:
     - run_static_skill_checks.py
+    - run_codex_campaign.py
+    - score_campaign.py
     - score_agent_run.py
     - dotnet build
     - ExcelDna.Testing on self-hosted Windows with Excel

@@ -16,6 +16,8 @@ artifacts/
 bin/
 obj/
 TestResults/
+__pycache__/
+*.py[cod]
 
 # IDE and user-specific files
 .vs/
