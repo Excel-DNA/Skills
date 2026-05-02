@@ -1,0 +1,33 @@
+# Eval manifest for Excel-DNA skill campaign
+name: excel-dna-skill-eval-campaign
+generated: 2026-04-28
+skill_under_test: excel-dna-addins
+scenario_file: evals/scenarios.jsonl
+default_release_gate:
+  static_validation: 1.00
+  p0_pass_rate: 1.00
+  positive_trigger_recall: 0.95
+  negative_trigger_specificity: 0.90
+  weighted_regression_score_min: 0.90
+target_models:
+  - gpt-5.5-pro
+  - claude-opus-4.7
+  - economical-routing-model
+graders:
+  deterministic:
+    - run_static_skill_checks.py
+    - score_agent_run.py
+    - dotnet build
+    - ExcelDna.Testing on self-hosted Windows with Excel
+  rubric:
+    - rubrics/llm_judge_rubrics.md
+  human:
+    - Excel-DNA maintainer SME review sample
+critical_failure_tags:
+  - wrong-platform
+  - stale-runtime-lifecycle
+  - unsafe-com-threading
+  - unsafe-c-api-context
+  - security-bypass-advice
+  - build-breaks-p0-template
+  - accidental-export-production

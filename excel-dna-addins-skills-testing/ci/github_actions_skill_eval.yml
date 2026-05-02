@@ -1,0 +1,46 @@
+name: Excel-DNA Skill Evaluation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'excel-dna-addins/**'
+      - 'skill-testing/**'
+
+jobs:
+  static-skill-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static skill checks
+        run: python skill-testing/scripts/run_static_skill_checks.py excel-dna-addins
+
+  build-template-smoke:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Run scaffold smoke
+        run: |
+          python excel-dna-addins/scripts/scaffold_excel_dna_addin.py --name SmokeAddIn --target net48 --output _smoke
+          dotnet build _smoke/SmokeAddIn.csproj
+
+  excel-integration:
+    # Use a self-hosted runner with Microsoft Excel installed and licensed.
+    runs-on: [self-hosted, windows, excel]
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Excel integration evals
+        shell: pwsh
+        run: |
+          dotnet test tests/ExcelIntegration/ExcelIntegration.csproj --logger "trx;LogFileName=excel-integration.trx"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: excel-integration-results
+          path: '**/*.trx'

@@ -1,0 +1,25 @@
+name: excel-dna-addins
+version: 0.1.0
+description: Create, extend, test, troubleshoot, and distribute Excel-DNA .xll add-ins for Excel on Windows with .NET, including NativeAOT preview builds.
+tags:
+  - excel
+  - excel-dna
+  - xll
+  - dotnet
+  - udf
+  - office-addins
+  - c-api
+  - nativeaot
+  - aot
+entrypoint: SKILL.md
+recommended_references:
+  - references/01_decision_guide.md
+  - references/02_project_bootstrap.md
+  - references/03_udf_core_patterns.md
+  - references/04_function_registration_extended.md
+  - references/05_async_streaming_rtd.md
+  - references/06_ribbon_ctp_intellisense.md
+  - references/07_com_and_c_api.md
+  - references/08_testing_distribution_installation.md
+  - references/09_troubleshooting_and_known_issues.md
+  - references/11_native_aot_preview.md

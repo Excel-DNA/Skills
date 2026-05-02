@@ -1,0 +1,10 @@
+Static skill validation
+Root: /mnt/data/exceldna_agent_skill_draft_unzipped/excel-dna-addins
+WARNING: Long reference lacks obvious table of contents: references/02_project_bootstrap.md
+WARNING: Long reference lacks obvious table of contents: references/03_udf_core_patterns.md
+WARNING: Long reference lacks obvious table of contents: references/04_function_registration_extended.md
+WARNING: Long reference lacks obvious table of contents: references/05_async_streaming_rtd.md
+WARNING: Long reference lacks obvious table of contents: references/06_ribbon_ctp_intellisense.md
+WARNING: Long reference lacks obvious table of contents: references/08_testing_distribution_installation.md
+WARNING: Long reference lacks obvious table of contents: references/09_troubleshooting_and_known_issues.md
+PASS: 0 errors, 7 warning(s)

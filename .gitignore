@@ -1,0 +1,34 @@
+# Generated runs and scratch work
+runs/
+scratch/
+external/
+artifacts/
+
+# Archives and packages
+*.zip
+*.7z
+*.tar
+*.tar.gz
+*.nupkg
+*.snupkg
+
+# Build outputs
+bin/
+obj/
+TestResults/
+
+# IDE and user-specific files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Logs and local diagnostics
+*.log
+*.trx
+
+# Local Codex activation links or mirrors
+.agents/
