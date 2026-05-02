@@ -14,6 +14,10 @@ The skill must be useful to:
 
 Treat this repo as both a skill-development project and a modernization-research project for Excel-DNA documentation, samples, tooling, templates, and user workflows.
 
+This repository targets both Codex-style skills and Claude Code workflows. Keep the core Excel-DNA package source portable in `skills/excel-dna-addins/`, then add thin agent-framework adapters for local activation, project memory, slash commands, subagents, and campaign runners.
+
+As of May 2026, use `.NET 10` / `net10.0-windows` as the current modern .NET baseline for controlled Windows desktop examples and tests. Keep `net48` as the conservative broad-distribution default. Treat older supported modern targets such as .NET 8/9 as compatibility constraints only when the user or scenario explicitly requires them.
+
 ## Preferred repository layout
 
 Normalize the local checkout to this shape:
@@ -21,6 +25,7 @@ Normalize the local checkout to this shape:
 ```text
 Skills/
   AGENTS.md
+  CLAUDE.md
   README.md
   .gitignore
   .gitattributes
@@ -39,6 +44,10 @@ Skills/
   .agents/
     skills/
       excel-dna-addins/                # local Codex skill activation copy or junction
+
+  .claude/
+    agents/                            # Claude Code project subagents
+    commands/                          # Claude Code project slash commands
 
   evals/
     excel-dna-addins/                  # skill testing and improvement campaign
@@ -86,6 +95,14 @@ cmd /c mklink /J ".agents\skills\excel-dna-addins" "skills\excel-dna-addins"
 
 Do not commit generated run outputs, temporary project workspaces, NuGet caches, local source clones, or large archives unless explicitly requested.
 
+For Claude Code support, commit:
+
+- root `CLAUDE.md` as shared project memory;
+- `.claude/agents/*.md` for reusable project subagents;
+- `.claude/commands/*.md` for project slash commands.
+
+Do not commit `.claude/settings.local.json`, credentials, personal settings, or local run traces. If Claude Code support changes upstream, verify against current Anthropic docs before changing shared Claude guidance.
+
 ## Source-of-truth hierarchy
 
 When resolving factual conflicts, use this order:
@@ -96,7 +113,8 @@ When resolving factual conflicts, use this order:
 4. Excel-DNA Samples, IntelliSense, WiXInstaller, and related repositories.
 5. Google Group discussions, especially for version-specific behavior, known traps, and maintainer intent.
 6. Microsoft documentation for Excel, Office Add-ins, .NET, NativeAOT, COM, and the Excel C API.
-7. User-provided context in the current session.
+7. Anthropic documentation for Claude Code project memory, commands, subagents, settings, permissions, and non-interactive CLI behavior.
+8. User-provided context in the current session.
 
 If a fact depends on a current version, package lifecycle, support policy, or preview feature status, verify it from a current source before presenting it as stable.
 
@@ -148,6 +166,12 @@ python evals\excel-dna-addins\scripts\run_static_skill_checks.py skills\excel-dn
 
 Expected result for release candidates: zero errors and zero warnings.
 
+Also run the current modern .NET scaffold smoke after template, scaffold, or target-framework changes:
+
+```powershell
+python evals\excel-dna-addins\scripts\run_template_smoke.py --target net10 --out scratch\template-smoke-net10
+```
+
 ### Tier 1: explicit P0 behavior
 
 Run P0 scenarios with the skill explicitly invoked. This evaluates content without making trigger behavior the blocker.
@@ -166,6 +190,22 @@ python evals\excel-dna-addins\scripts\score_campaign.py `
   --out runs\p0-explicit\score.json
 ```
 
+Claude Code explicit P0 equivalent:
+
+```powershell
+python evals\excel-dna-addins\scripts\run_claude_campaign.py `
+  --skill-dir skills\excel-dna-addins `
+  --scenarios evals\excel-dna-addins\evals\scenarios.jsonl `
+  --out runs\claude-p0-explicit `
+  --priority P0 `
+  --activation explicit
+
+python evals\excel-dna-addins\scripts\score_campaign.py `
+  --scenarios evals\excel-dna-addins\evals\scenarios.jsonl `
+  --run-root runs\claude-p0-explicit `
+  --out runs\claude-p0-explicit\score.json
+```
+
 ### Tier 2: implicit trigger behavior
 
 Run a smaller P0/P1 slice without explicit skill invocation.
@@ -175,6 +215,18 @@ python evals\excel-dna-addins\scripts\run_codex_campaign.py `
   --skill-dir skills\excel-dna-addins `
   --scenarios evals\excel-dna-addins\evals\scenarios.jsonl `
   --out runs\p0-implicit-smoke `
+  --priority P0 `
+  --activation implicit `
+  --limit 10
+```
+
+Claude Code implicit smoke equivalent:
+
+```powershell
+python evals\excel-dna-addins\scripts\run_claude_campaign.py `
+  --skill-dir skills\excel-dna-addins `
+  --scenarios evals\excel-dna-addins\evals\scenarios.jsonl `
+  --out runs\claude-p0-implicit-smoke `
   --priority P0 `
   --activation implicit `
   --limit 10
@@ -190,7 +242,7 @@ Use a Windows machine with desktop Excel installed. Record Excel version, bitnes
 
 ### Tier 5: cross-model/cross-agent behavior
 
-Run a canonical subset against the agent frameworks you plan to support. Keep the scenario set identical and compare outputs using the same scoring rules.
+Run a canonical subset against Codex and Claude Code. Keep the scenario set identical and compare outputs using the same scoring rules. Track agent-framework-specific failures separately from skill-content failures.
 
 ## Scoring and failure handling
 
@@ -207,6 +259,8 @@ Every failed scenario should be classified as one or more of:
 - NativeAOT preview-status or AOT-compatibility failure;
 - grader/scorer weakness;
 - local infrastructure issue.
+- agent-framework adapter issue;
+- Claude Code project memory, subagent, slash-command, or permission issue.
 
 Fix the smallest general cause. Do not patch the skill only to satisfy one prompt. After a fix, rerun:
 
@@ -268,6 +322,7 @@ artifacts/
 bin/
 obj/
 .vs/
+.claude/settings.local.json
 *.user
 *.suo
 *.log
@@ -275,6 +330,20 @@ TestResults/
 ```
 
 If `.agents/skills/excel-dna-addins` is a junction or mirror, decide whether it is committed or ignored. Prefer committing the canonical skill source under `skills/excel-dna-addins` and using a local setup step for `.agents/skills/excel-dna-addins`.
+
+Commit `CLAUDE.md`, `.claude/agents/`, and `.claude/commands/` because they are shared Claude Code project guidance. Keep local Claude settings and credentials ignored.
+
+## Claude Code operating instructions
+
+When working with Claude Code in this repo:
+
+1. Start from root `CLAUDE.md`, then read `AGENTS.md`.
+2. Use `.claude/commands/static-skill-checks.md` and `.claude/commands/net10-template-smoke.md` for repeatable local checks.
+3. Use `.claude/agents/source-verifier.md` for current facts, `.claude/agents/template-smoke-runner.md` for scaffold validation, and `.claude/agents/campaign-scorer.md` for captured run scoring.
+4. Use `run_claude_campaign.py` for scenario campaigns and `run_codex_campaign.py` for Codex campaigns; do not mix outputs in the same run directory.
+5. Prefer non-interactive Claude Code runs for evals using `claude -p`, with generated output captured under `runs/`.
+6. Keep presentation concise and practical: findings first for reviews, exact commands for eval work, and clear distinction between verified facts and inferences.
+7. Follow Claude Code permission and security guidance; do not bypass permissions outside an explicitly sandboxed eval environment.
 
 ## Codex operating instructions
 

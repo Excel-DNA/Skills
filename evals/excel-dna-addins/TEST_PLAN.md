@@ -143,7 +143,7 @@ Run on every change:
 - All referenced files exist and are no more than one reference hop from `SKILL.md`.
 - Long reference files have a table of contents.
 - Script files can run `--help` or a smoke mode.
-- Templates contain current package names and supported target framework guidance.
+- Templates contain current package names and supported target framework guidance. As of May 2026, the modern controlled-desktop baseline is `net10.0-windows`; `net48` remains the conservative broad-distribution baseline.
 - Stale or dangerous phrases are blocked, for example `'.NET 6.0 (Long-term support)'` as a current recommendation, `XLL works on Mac`, or `disable all Excel security`.
 
 ### Tier 1: Trigger and routing validation
@@ -269,8 +269,8 @@ Use this loop for every iteration:
 
 Run the same scenario set against each target environment:
 
-- GPT 5.5 Pro / Codex-style coding agent with the skill installed.
-- Claude Opus 4.7 / Claude Code-style coding agent with the skill installed.
+- Codex-style coding agent with the skill installed.
+- Claude Code with project `CLAUDE.md`, `.claude/agents/`, `.claude/commands/`, and the skill package available.
 - A faster/economical model profile for regression-smoke routing and simple scaffolds.
 - Optional no-skill baseline to quantify skill lift.
 
@@ -290,7 +290,7 @@ Recommended runner inventory:
 - Windows 11 or supported Windows Server desktop-capable environment.
 - Office/Excel current channel plus at least one semi-annual or legacy channel if enterprise customers require it.
 - 64-bit Excel primary; 32-bit Excel runner if supporting x86.
-- .NET Framework 4.8 and currently supported modern .NET Desktop Runtime(s).
+- .NET Framework 4.8 and .NET 10 Desktop Runtime for the current modern baseline.
 - Visual Studio Build Tools or .NET SDKs.
 - Code signing test certificate where needed.
 - Excel configured for deterministic test startup, with isolated profile and no unrelated add-ins.

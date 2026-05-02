@@ -34,3 +34,6 @@ __pycache__/
 
 # Local Codex activation links or mirrors
 .agents/
+
+# Local Claude Code settings
+.claude/settings.local.json

@@ -13,10 +13,15 @@ target_models:
   - gpt-5.5-pro
   - claude-opus-4.7
   - economical-routing-model
+target_agent_frameworks:
+  - codex
+  - claude-code
 graders:
   deterministic:
     - run_static_skill_checks.py
     - run_codex_campaign.py
+    - run_claude_campaign.py
+    - run_template_smoke.py
     - score_campaign.py
     - score_agent_run.py
     - dotnet build

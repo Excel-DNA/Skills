@@ -10,7 +10,7 @@
 - [Excel-DNA vs VSTO / COM add-ins](#excel-dna-vs-vsto-com-add-ins)
 - [Runtime choice: .NET Framework vs modern .NET](#runtime-choice-net-framework-vs-modern-net)
   - [.NET Framework 4.8 / 4.8.1](#net-framework-48-481)
-  - [Modern .NET (`net8.0-windows` and later where supported)](#modern-net-net80-windows-and-later-where-supported)
+  - [Modern .NET (`net10.0-windows` current baseline)](#modern-net-net100-windows-current-baseline)
   - [NativeAOT preview](#nativeaot-preview)
 - [Recommended default choices](#recommended-default-choices)
 - [Product positioning summary](#product-positioning-summary)
@@ -105,12 +105,13 @@ Trade-offs:
 - Older BCL and NuGet compatibility constraints.
 - Less attractive for new .NET ecosystem libraries.
 
-### Modern .NET (`net8.0-windows` and later where supported)
+### Modern .NET (`net10.0-windows` current baseline)
 
 Advantages:
 
 - Newer C# language features and .NET libraries.
 - Better alignment with current .NET development.
+- .NET 10 is the current LTS baseline for new controlled-desktop skill examples.
 - Potential NativeAOT route for specialized scenarios.
 
 Trade-offs:
@@ -146,8 +147,8 @@ Use NativeAOT as a deliberate compatibility project: create a small pilot, publi
 | Scenario | Default recommendation |
 |---|---|
 | Public/external add-in with unknown target machines | `net48`, packed `.xll`, code-signing, installer optional |
-| Corporate add-in with managed desktops | `net8.0-windows` or current supported modern .NET, explicit runtime prerequisite |
-| Library must support both old and modern deployments | Multi-target `net48;net8.0-windows` |
+| Corporate add-in with managed desktops | `net10.0-windows`, explicit .NET 10 Desktop Runtime prerequisite |
+| Library must support both old and modern deployments | Multi-target `net48;net10.0-windows` |
 | Runtime-free 64-bit distribution is strategic and feature set is compatible | Investigate NativeAOT preview as a separate track |
 | Experimental sample/tutorial | `net48` for broadest frictionless loading, current supported modern .NET for controlled desktops, or NativeAOT preview only when the exercise is specifically about runtime-free 64-bit XLLs |
 

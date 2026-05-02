@@ -21,8 +21,8 @@ This file is an explicit output of the collation. It separates documentation gap
 
 | Priority | Gap | Why it matters | Suggested fix |
 |---|---|---|---|
-| P0 | Getting Started still centers `.NET 6 LTS` in places | .NET 6 is out of support; new users may start on an obsolete runtime | Update quickstart to `net8.0-windows` or current supported LTS guidance, while explaining when `net48` is the safer default |
-| P0 | Runtime decision guidance is spread out | Runtime choice determines deployment success and add-in coexistence | Create a one-page decision tree: `net48`, `net8+`, NativeAOT, multi-target |
+| P0 | Getting Started still centers .NET 6 in places | .NET 6 is out of support; new users may start on an obsolete runtime | Update quickstart to `net10.0-windows` as the modern baseline, while explaining when `net48` is the safer default |
+| P0 | Runtime decision guidance is spread out | Runtime choice determines deployment success and add-in coexistence | Create a one-page decision tree: `net48`, `net10`, NativeAOT, multi-target |
 | P0 | Async docs mix older Registration-library patterns with newer v1.9 registration | Users may cargo-cult stale setup or miss direct `Task<T>` / `IObservable<T>` support | Rewrite async page around modern task/observable patterns, with legacy section below |
 | P0 | Function Registration page says key areas are still to be expanded | Registration is central to UDF development | Expand into type matrix, optional/default params, async/streaming, object handles, handlers, examples |
 | P1 | Explicit export behavior and accidental function registration need stronger guidance | Public helper methods can accidentally become worksheet functions | Make `ExcelAddInExplicitExports=true` the production default and explain prototype exception |
@@ -43,7 +43,7 @@ This file is an explicit output of the collation. It separates documentation gap
 Create templates:
 
 - `exceldna-udf-net48`
-- `exceldna-udf-net8`
+- `exceldna-udf-net10`
 - `exceldna-ribbon`
 - `exceldna-async`
 - `exceldna-testing`

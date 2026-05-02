@@ -36,7 +36,7 @@ For modern .NET on controlled desktops:
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
@@ -56,7 +56,7 @@ Multi-targeting is useful for libraries that want broad stable distribution and 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
+    <TargetFrameworks>net48;net10.0-windows</TargetFrameworks>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <ExcelAddInExplicitExports>true</ExcelAddInExplicitExports>
@@ -192,7 +192,7 @@ The package includes:
 
 ```bash
 python scripts/scaffold_excel_dna_addin.py --name MyAddIn --target net48 --output ./work
-python scripts/scaffold_excel_dna_addin.py --name MyAddIn --target net8 --features async,ribbon,testing --output ./work
+python scripts/scaffold_excel_dna_addin.py --name MyAddIn --target net10 --features async,ribbon,testing --output ./work
 python scripts/scaffold_excel_dna_addin.py --name MyNativeAddIn --target nativeaot --output ./work
 ```
 

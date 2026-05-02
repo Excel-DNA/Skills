@@ -23,10 +23,12 @@ def safe_identifier(name: str) -> str:
 def target_framework(target: str) -> tuple[str, str]:
     if target == "net48":
         return "net48", ""
+    if target == "net10":
+        return "net10.0-windows", "<UseWindowsForms>true</UseWindowsForms>\n    <RollForward>LatestMajor</RollForward>"
     if target == "net8":
         return "net8.0-windows", "<UseWindowsForms>true</UseWindowsForms>\n    <RollForward>LatestMajor</RollForward>"
     if target == "multi":
-        return "net48;net8.0-windows", "<UseWindowsForms>true</UseWindowsForms>"
+        return "net48;net10.0-windows", "<UseWindowsForms>true</UseWindowsForms>"
     if target == "nativeaot":
         return "net10.0-windows", "<RuntimeIdentifier>win-x64</RuntimeIdentifier>\n    <PublishAot>true</PublishAot>"
     raise ValueError(f"Unsupported target: {target}")
@@ -38,10 +40,6 @@ def write_project(out: Path, name: str, target: str, features: set[str]) -> None
     tfm, extra = target_framework(target)
     tfm_tag = "TargetFrameworks" if target == "multi" else "TargetFramework"
     extra_block = f"\n    {extra}" if extra else ""
-    testing_pkg = ""
-    if "testing" in features and not native_aot:
-        testing_pkg = '\n    <PackageReference Include="ExcelDna.Testing" Version="1.9.0" />'
-
     if native_aot:
         pack_props = ""
         package_line = f'<PackageReference Include="ExcelDna.AddIn.NativeAOT" Version="{NATIVE_AOT_PACKAGE_VERSION}" />'
@@ -60,7 +58,7 @@ def write_project(out: Path, name: str, target: str, features: set[str]) -> None
   </PropertyGroup>
 
   <ItemGroup>
-    {package_line}{testing_pkg}
+    {package_line}
   </ItemGroup>
 </Project>
 """.lstrip()
@@ -235,7 +233,7 @@ public class RibbonController : ExcelRibbon
 - Build the project and load the generated `.xll` in Excel for Windows.
 """.strip()
         if "testing" in features:
-            readme_notes += "\n- `ExcelDna.Testing` is referenced; create a separate xUnit test project or Excel-hosted test harness as needed."
+            readme_notes += "\n- For Excel-hosted tests, create a separate test project or harness that references `ExcelDna.Testing`; do not add the test harness package to this add-in project by default."
 
     readme = f"""
 # {ident}
@@ -259,7 +257,7 @@ Excel-DNA starter add-in.
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--name", required=True, help="Project/add-in name")
-    parser.add_argument("--target", choices=["net48", "net8", "multi", "nativeaot"], default="net48")
+    parser.add_argument("--target", choices=["net48", "net10", "net8", "multi", "nativeaot"], default="net48")
     parser.add_argument("--features", default="", help="Comma-separated: async,ribbon,testing")
     parser.add_argument("--output", default=".", help="Output directory")
     args = parser.parse_args()

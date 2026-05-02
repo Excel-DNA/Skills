@@ -6,6 +6,8 @@ on:
     paths:
       - 'skills/excel-dna-addins/**'
       - 'evals/excel-dna-addins/**'
+      - '.claude/**'
+      - 'CLAUDE.md'
       - 'AGENTS.md'
 
 jobs:
@@ -23,12 +25,10 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            8.0.x
             10.0.x
       - name: Run scaffold smoke
         run: |
-          python skills/excel-dna-addins/scripts/scaffold_excel_dna_addin.py --name SmokeAddIn --target net48 --output _smoke
-          dotnet build _smoke/SmokeAddIn.csproj
+          python evals/excel-dna-addins/scripts/run_template_smoke.py --target net10 --out scratch/template-smoke-net10
 
   excel-integration:
     # Use a self-hosted runner with Microsoft Excel installed and licensed.

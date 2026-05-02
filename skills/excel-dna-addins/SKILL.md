@@ -45,7 +45,7 @@ Avoid this skill for:
 - Treat the UDF surface as the primary product. Most Excel-DNA value comes from exposing .NET computation as worksheet functions that participate naturally in Excel's recalculation, dependency, auditing, and modeling workflow.
 - Prefer simple, deterministic, side-effect-free worksheet functions unless the requirement explicitly needs async, streaming, object handles, macros, or UI interaction.
 - Keep UI actions and workbook mutations out of normal worksheet functions. Put state-changing work in ribbon callbacks, commands, macros, or code queued with `ExcelAsyncUtil.QueueAsMacro`.
-- Decide runtime and deployment up front. `.NET Framework 4.8` is the conservative distribution default for broad Windows fleets. Modern .NET (`net8.0-windows`, `net10.0-windows`, or later where supported) gives newer C# and library access but requires installed runtimes and has process-level runtime collision considerations. NativeAOT is a preview/specialized runtime-free 64-bit path; never treat it as a drop-in default without checking feature compatibility and AOT warnings.
+- Decide runtime and deployment up front. `.NET Framework 4.8` is the conservative distribution default for broad Windows fleets. Modern .NET examples should target `net10.0-windows` as the current LTS baseline unless the user has a specific older supported runtime constraint. Modern .NET gives newer C# and library access but requires installed runtimes and has process-level runtime collision considerations. NativeAOT is a preview/specialized runtime-free 64-bit path; never treat it as a drop-in default without checking feature compatibility and AOT warnings.
 - Be explicit about registration. For production libraries, prefer `[ExcelFunction]` and `ExcelAddInExplicitExports=true` unless the add-in is intentionally a quick prototype.
 - Respect Excel threading. Never call Excel's COM object model from arbitrary background threads. Use macro/ribbon contexts or queue work back to Excel.
 - Use Excel-DNA build tasks and packing instead of hand-copying outputs. Sign packed `.xll` files for distribution.
@@ -57,7 +57,7 @@ When generating an Excel-DNA project:
 
 - Use SDK-style `.csproj`.
 - Include `PackageReference Include="ExcelDna.AddIn" Version="1.9.0"` for ordinary managed add-ins unless the user asks to float or pin another version. For NativeAOT preview projects, use `ExcelDna.AddIn.NativeAOT` from the matching preview train instead.
-- Prefer `net48` for broad distribution stability; prefer a currently supported modern .NET Windows target for controlled machines; use multi-targeting when a library must serve both. For NativeAOT preview, prefer a separate or conditionally configured `net10.0-windows`/`win-x64` project until package layout stabilizes.
+- Prefer `net48` for broad distribution stability; prefer `net10.0-windows` for controlled modern .NET machines; use multi-targeting when a library must serve both. For NativeAOT preview, prefer a separate or conditionally configured `net10.0-windows`/`win-x64` project until package layout stabilizes.
 - Use `ExcelAddInExplicitExports=true` for production examples.
 - Include `[ExcelFunction]` and `[ExcelArgument]` metadata.
 - Include at least one smoke-testable UDF.
