@@ -8,11 +8,43 @@ import os
 import subprocess
 from pathlib import Path
 
-DEFAULT_RUNNER = "claude -p --permission-mode acceptEdits --output-format text"
+DEFAULT_RUNNER_TEMPLATE = 'claude -p --permission-mode acceptEdits --add-dir "{repo_root}" --output-format text'
 
 
 def load_scenarios(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+def run_post_build_if_needed(scenario: dict, run_dir: Path, workspace: Path) -> tuple[list[dict], bool | None]:
+    checks = " ".join(scenario.get("deterministic_checks", []))
+    if "dotnet build passes" not in checks:
+        return [], None
+
+    projects = sorted(workspace.rglob("*.csproj"))
+    if not projects:
+        return [
+            {
+                "command": "dotnet build",
+                "returncode": 1,
+                "note": "No .csproj found under workspace",
+            }
+        ], False
+
+    project = projects[0]
+    proc = subprocess.run(
+        ["dotnet", "build", str(project.resolve()), "-v:minimal"],
+        text=True,
+        cwd=run_dir,
+        capture_output=True,
+    )
+    (run_dir / "post-build.txt").write_text(proc.stdout + proc.stderr, encoding="utf-8")
+    return [
+        {
+            "command": f"dotnet build {project} -v:minimal",
+            "returncode": proc.returncode,
+            "stdout_path": "post-build.txt",
+        }
+    ], proc.returncode == 0
 
 
 def scenario_prompt(scenario: dict, skill_dir: Path, activation: str) -> str:
@@ -46,7 +78,7 @@ def main() -> int:
     ap.add_argument("--priority")
     ap.add_argument("--activation", choices=["explicit", "implicit"], required=True)
     ap.add_argument("--limit", type=int, default=0)
-    ap.add_argument("--runner", default=os.environ.get("CLAUDE_CAMPAIGN_RUNNER", DEFAULT_RUNNER))
+    ap.add_argument("--runner", default=os.environ.get("CLAUDE_CAMPAIGN_RUNNER"))
     ap.add_argument("--dry-run", action="store_true", help="Validate inputs and print the selected scenario ids without invoking Claude")
     args = ap.parse_args()
 
@@ -54,6 +86,8 @@ def main() -> int:
         raise SystemExit(f"Skill directory is missing SKILL.md: {args.skill_dir}")
     if not args.scenarios.exists():
         raise SystemExit(f"Scenario file does not exist: {args.scenarios}")
+    if not args.runner:
+        args.runner = DEFAULT_RUNNER_TEMPLATE.format(repo_root=Path.cwd())
 
     scenarios = load_scenarios(args.scenarios)
     if args.priority:
@@ -88,6 +122,7 @@ def main() -> int:
         )
         (run_dir / "answer.txt").write_text(proc.stdout, encoding="utf-8")
         (run_dir / "stderr.txt").write_text(proc.stderr, encoding="utf-8")
+        commands, build_ok = run_post_build_if_needed(scenario, run_dir, workspace)
         (run_dir / "trace.json").write_text(
             json.dumps(
                 {
@@ -99,7 +134,8 @@ def main() -> int:
                     "skill_triggered": True if args.activation == "explicit" else None,
                     "runner": args.runner,
                     "references_read": [],
-                    "commands": [],
+                    "commands": commands,
+                    "post_build_passed": build_ok,
                 },
                 indent=2,
             ),

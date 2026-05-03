@@ -18,6 +18,7 @@ def load_scenarios(path: Path) -> list[dict]:
 def score_one(scenario: dict, run_dir: Path) -> dict:
     trace_path = run_dir / "trace.json"
     trace = json.loads(trace_path.read_text(encoding="utf-8")) if trace_path.exists() else {}
+    trace["run_dir"] = str(run_dir)
     text = read_all_text(run_dir)
     results = []
     for check in scenario.get("deterministic_checks", []):

@@ -20,6 +20,38 @@ def load_scenarios(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
+def run_post_build_if_needed(scenario: dict, run_dir: Path, workspace: Path) -> tuple[list[dict], bool | None]:
+    checks = " ".join(scenario.get("deterministic_checks", []))
+    if "dotnet build passes" not in checks:
+        return [], None
+
+    projects = sorted(workspace.rglob("*.csproj"))
+    if not projects:
+        return [
+            {
+                "command": "dotnet build",
+                "returncode": 1,
+                "note": "No .csproj found under workspace",
+            }
+        ], False
+
+    project = projects[0]
+    proc = subprocess.run(
+        ["dotnet", "build", str(project.resolve()), "-v:minimal"],
+        text=True,
+        cwd=run_dir,
+        capture_output=True,
+    )
+    (run_dir / "post-build.txt").write_text(proc.stdout + proc.stderr, encoding="utf-8")
+    return [
+        {
+            "command": f"dotnet build {project} -v:minimal",
+            "returncode": proc.returncode,
+            "stdout_path": "post-build.txt",
+        }
+    ], proc.returncode == 0
+
+
 def scenario_prompt(scenario: dict, skill_dir: Path, activation: str) -> str:
     user_prompt = scenario["prompt"]
     if activation == "explicit":
@@ -92,6 +124,7 @@ def main() -> int:
         )
         (run_dir / "answer.txt").write_text(proc.stdout, encoding="utf-8")
         (run_dir / "stderr.txt").write_text(proc.stderr, encoding="utf-8")
+        commands, build_ok = run_post_build_if_needed(scenario, run_dir, workspace)
         (run_dir / "trace.json").write_text(
             json.dumps(
                 {
@@ -102,7 +135,8 @@ def main() -> int:
                     "skill_triggered": True if args.activation == "explicit" else None,
                     "runner": args.runner,
                     "references_read": [],
-                    "commands": [],
+                    "commands": commands,
+                    "post_build_passed": build_ok,
                 },
                 indent=2,
             ),

@@ -29,6 +29,29 @@ def read_all_text(run_dir: Path) -> str:
                 parts.append(path.read_text(encoding="utf-8", errors="ignore"))
     return "\n".join(parts)
 
+
+def workspace_files(run_dir: Path, suffixes: set[str] | None = None) -> list[Path]:
+    workspace = run_dir / "workspace"
+    if not workspace.exists():
+        return []
+    files = [path for path in workspace.rglob("*") if path.is_file()]
+    if suffixes is not None:
+        suffixes = {suffix.lower() for suffix in suffixes}
+        files = [path for path in files if path.suffix.lower() in suffixes]
+    return files
+
+
+def file_text_contains(paths: list[Path], needle: str) -> bool:
+    needle = needle.lower()
+    for path in paths:
+        try:
+            if needle in path.read_text(encoding="utf-8", errors="ignore").lower():
+                return True
+        except OSError:
+            continue
+    return False
+
+
 def check_expr(expr: str, text: str, trace: dict) -> bool:
     expr = expr.strip()
     if not expr:
@@ -49,9 +72,23 @@ def check_expr(expr: str, text: str, trace: dict) -> bool:
     if expr.startswith("does not contain "):
         needle = expr[len("does not contain "):].strip().strip("'\"")
         return needle.lower() not in text.lower()
+    if expr == "project contains .csproj":
+        return bool(workspace_files(Path(trace.get("run_dir", ".")), {".csproj"})) or ".csproj" in text.lower()
+    if expr.startswith("csproj contains "):
+        needle = expr[len("csproj contains "):].strip().strip("'\"")
+        run_dir = Path(trace.get("run_dir", "."))
+        return file_text_contains(workspace_files(run_dir, {".csproj"}), needle) or needle.lower() in text.lower()
     if expr.startswith("source contains "):
         needle = expr[len("source contains "):].strip().strip("'\"")
-        return needle.lower() in text.lower()
+        run_dir = Path(trace.get("run_dir", "."))
+        return file_text_contains(workspace_files(run_dir, {".cs", ".fs", ".vb"}), needle) or needle.lower() in text.lower()
+    if expr == "dotnet build passes when SDK/runtime available":
+        commands = trace.get("commands", [])
+        return any(
+            "dotnet build" in str(command.get("command", "")).lower() and command.get("returncode") == 0
+            for command in commands
+            if isinstance(command, dict)
+        ) or "build succeeded" in text.lower()
     # Fallback: all words must appear somewhere.
     tokens = re.findall(r"[A-Za-z0-9_.#<>-]+", expr)
     return all(tok.lower() in text.lower() for tok in tokens)
@@ -69,6 +106,7 @@ def main():
 
     trace_path = args.run_dir / "trace.json"
     trace = json.loads(trace_path.read_text(encoding="utf-8")) if trace_path.exists() else {}
+    trace["run_dir"] = str(args.run_dir)
     text = read_all_text(args.run_dir)
 
     results = []
