@@ -5,6 +5,7 @@
 - [Why C API knowledge matters](#why-c-api-knowledge-matters)
 - [XLL lifecycle concepts](#xll-lifecycle-concepts)
 - [`XlCall`](#xlcall)
+- [Excel 4 macro/XLM reference](#excel-4-macroxlm-reference)
 - [`ExcelReference`](#excelreference)
 - [`Excel`, `TryExcel`, and errors](#excel-tryexcel-and-errors)
 - [Context categories](#context-categories)
@@ -36,6 +37,12 @@ object result = XlCall.Excel(XlCall.xlfGetCell, 48, new ExcelReference(0, 0, 0, 
 ```
 
 Use `XlCall` when normal Excel-DNA abstractions are insufficient. Avoid it for ordinary UDFs where typed parameters and return values are enough.
+
+## Excel 4 macro/XLM reference
+
+For Excel 4 macro help, macro-sheet functions, XLM command macros, `ExecuteExcel4Macro`, and legacy topics such as `GET.CELL`, `CALLER`, `REGISTER`, `CALL`, `EVALUATE`, and `VOLATILE`, open `references/13_excel4_macro_help_reference.md`.
+
+Use that reference to understand historical Excel behavior and C API context rules, not as a default recommendation for new add-ins. Prefer normal Excel-DNA UDFs, commands, ribbon callbacks, COM object model calls in valid contexts, and `QueueAsMacro` where they express the requirement directly.
 
 ## `ExcelReference`
 

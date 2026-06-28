@@ -22,6 +22,7 @@ This package should be kept aligned with the following source families.
 - Main docs: https://excel-dna.net/docs/
 - Main repository: https://github.com/Excel-DNA/ExcelDna
 - Samples repository: https://github.com/Excel-DNA/Samples
+- Tutorials repository, especially RibbonBasics: https://github.com/Excel-DNA/Tutorials/tree/master/Fundamentals/RibbonBasics
 - Google Group: https://groups.google.com/g/exceldna
 
 ## Packages
@@ -39,6 +40,11 @@ This package should be kept aligned with the following source families.
 - Async Functions
 - Excel C API
 - Ribbon
+- Office Ribbon Custom UI control and callback reference:
+  - Part 1 overview: https://msdn.microsoft.com/en-us/library/aa338202.aspx
+  - Part 2 controls and callbacks: https://msdn.microsoft.com/en-us/library/aa338199.aspx
+  - Part 3 FAQ and callback signatures: https://msdn.microsoft.com/en-us/library/aa722523.aspx
+- Excel 4 macro/XLM help corpus: local reference files under `C:/Work/ExcelDna/MacroHelp`, especially `TerryAney-copilot.excel.macro.reference/copilot.excel.macro.reference.md`
 - Installing Add-ins
 - NativeAOT support
 - WiXInstaller repository

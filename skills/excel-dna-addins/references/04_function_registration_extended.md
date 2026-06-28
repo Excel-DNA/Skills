@@ -57,6 +57,8 @@ Review attributes during code generation:
 - `IsVolatile` should be rare and justified.
 - `IsMacroType` should be rare and justified.
 
+`HelpTopic` note: Excel's `xlfRegister` requires `path!HelpContextID` (e.g., `https://example.com/help!0`). On the standard registration path Excel-DNA's loader appends `!0` automatically when the `HelpTopic` value starts with `http://`, `https://`, or `file://` and is missing the suffix, so the bare URL above works for ordinary `[ExcelFunction]` registration. **On the Registration pipeline path** (functions wrapped through `ExcelRegistration.RegisterFunctions(...)` — the same pipeline used to install execution handlers and registration transforms), that auto-fix is bypassed, and you must include `!0` in the attribute value yourself. If you mix `HelpTopic` URLs with handlers, write `"https://example.com/help!0"` explicitly.
+
 ## Optional/default parameters
 
 Modern Excel-DNA registration supports more optional/default parameter patterns than older examples. Still be explicit about how omitted and empty values behave.
@@ -101,9 +103,13 @@ Excel-DNA's newer registration model includes function execution handler extensi
 - authorization / feature flags
 - dependency injection of services
 
-A conceptual pattern:
+The handler types live in the `ExcelDna.Registration` namespace (shipped inside the `ExcelDna.Integration` assembly in current Excel-DNA versions).
 
 ```csharp
+using ExcelDna.Integration;
+using ExcelDna.Registration;
+using System.Diagnostics;
+
 public sealed class TimingHandler : FunctionExecutionHandler
 {
     public override void OnEntry(FunctionExecutionArgs args)
@@ -124,12 +130,18 @@ public sealed class TimingHandler : FunctionExecutionHandler
     {
         // Map known exceptions to ExcelError, log details elsewhere.
         args.ReturnValue = ExcelError.ExcelErrorValue;
-        args.Handled = true;
+        args.FlowBehavior = FlowBehavior.Return;
     }
 }
 ```
 
-The exact hook names should be checked against the current Excel-DNA source/API before compiling, but the design intent is stable: apply cross-cutting behavior at registration/execution rather than copy/paste wrappers into every UDF.
+Key points to keep this snippet correct against the current source:
+
+- `FunctionExecutionArgs` has no `Handled` property. Flow control is via `args.FlowBehavior`, with `FlowBehavior.Return` (use `args.ReturnValue`), `FlowBehavior.RethrowException`, `FlowBehavior.ThrowException`, and `FlowBehavior.Default`.
+- Available `FunctionExecutionArgs` members: `FunctionName`, `Arguments` (read-only), `ReturnValue`, `Exception`, `FlowBehavior`, `Tag`.
+- Virtuals are `OnEntry`, `OnSuccess`, `OnException`, `OnExit`. The class also implements `IFunctionExecutionHandler` if you prefer the interface form.
+
+Apply cross-cutting behavior at registration/execution rather than copy/pasting wrappers into every UDF.
 
 ## Registration transforms
 

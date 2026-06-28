@@ -33,8 +33,8 @@ Avoid this skill for:
 3. **UDF implementation**: open `references/03_udf_core_patterns.md`.
 4. **Registration, metadata, conversions, AOP-like wrapping**: open `references/04_function_registration_extended.md`.
 5. **Async, streaming, RTD, cancellation, batching**: open `references/05_async_streaming_rtd.md`.
-6. **Ribbon, CTP, IntelliSense, COM callbacks**: open `references/06_ribbon_ctp_intellisense.md`.
-7. **C API and COM interop**: open `references/07_com_and_c_api.md`.
+6. **Ribbon, CTP, IntelliSense, COM callbacks**: open `references/06_ribbon_ctp_intellisense.md`; for full Office Ribbon XML control/callback signatures open `references/12_ribbon_xml_callback_reference.md`.
+7. **C API, COM interop, and Excel 4 macro/XLM behavior**: open `references/07_com_and_c_api.md`; for XLM macro help details open `references/13_excel4_macro_help_reference.md`.
 8. **Testing and distribution**: open `references/08_testing_distribution_installation.md`.
 9. **NativeAOT preview builds**: open `references/11_native_aot_preview.md` before giving setup, migration, feature-compatibility, or troubleshooting advice for `ExcelDna.AddIn.NativeAOT`.
 10. **Troubleshooting**: open `references/09_troubleshooting_and_known_issues.md`.

@@ -172,6 +172,7 @@ Likely causes:
 - Ignored AOT/trimming warnings during publish.
 - Dependency relies on dynamic loading, runtime code generation, broad reflection, C++/CLI, or unsupported COM.
 - Preview package layout/tool-path issue such as `ExcelDnaToolsPath` resolving to the wrong package tools folder.
+- Publish failure in `Microsoft.NETCore.Native.targets` with `MSB3073 ... exited with code 123` and "filename, directory name, or volume label syntax is incorrect" — the AOT linker shells out to `vswhere.exe` to find MSVC; from a plain shell `vswhere` is usually not on `PATH`. Run from a Visual Studio Developer Command Prompt, or prepend `C:\Program Files (x86)\Microsoft Visual Studio\Installer` to `PATH` for the session.
 
 Debug path:
 

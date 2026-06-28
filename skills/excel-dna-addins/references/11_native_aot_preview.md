@@ -165,6 +165,8 @@ Use `using ExcelDna.Integration;` even when the only explicit package reference 
 
 NativeAOT builds need the .NET SDK and native toolchain. On Windows, install a Visual Studio version supported by the .NET SDK with the Desktop development with C++ workload.
 
+The AOT linker step shells out to `vswhere.exe` to locate the MSVC toolchain. `vswhere.exe` ships with the Visual Studio Installer at `C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe`, but that directory is not on the default user `PATH`. If you run `dotnet publish` from a plain shell rather than a Visual Studio Developer Command Prompt and `vswhere` is not on `PATH`, the publish fails late with a confusing "filename, directory name, or volume label syntax is incorrect" error from `Microsoft.NETCore.Native.targets` rather than naming `vswhere`. Either run from a Developer Command Prompt / `Developer PowerShell for VS`, or add the Installer directory to `PATH` for the session.
+
 Recommended commands:
 
 ```bash
@@ -172,13 +174,34 @@ dotnet restore -r win-x64
 dotnet publish -c Release -r win-x64
 ```
 
-Expected output shape is RID-specific. The published XLL is typically under a path similar to:
+Expected output shape is RID-specific. The relevant artifacts under `bin/Release/net10.0-windows/win-x64/`:
 
 ```text
-bin/Release/net10.0-windows/win-x64/publish/win-x64/MyNativeAddIn-AddIn64.xll
+<root>/MyNativeAddin.dll                    (small managed input DLL — IL, build step)
+<root>/native/MyNativeAddin.dll             (AOT-linked native DLL — output of the AOT linker)
+<root>/publish/MyNativeAddin.dll            (byte-identical copy of native/MyNativeAddin.dll)
+<root>/publish/MyNativeAddin-AddIn64.xll    (the artifact Excel loads)
 ```
 
-The `*-AddIn64.xll` is the add-in artifact to load in 64-bit Excel. Build systems should copy/sign/package that file, not the ordinary managed build output.
+(Verified against `ExcelDna.AddIn.NativeAOT 1.10.0-preview4` with the .NET 10 SDK.) Only `<AssemblyName>-AddIn64.xll` ships. The other files in `publish/` and the entire `native/` and root build folders are intermediates.
+
+### What's actually inside the published XLL
+
+The `*-AddIn64.xll` is **not** the AOT-linked native DLL. It is an Excel-DNA loader-stub PE (`ExcelDna*.xll`, ~580 KB) shipped inside the `ExcelDna.AddIn.NativeAOT` package, with the AOT-compiled native DLL embedded as a Win32 resource. Look for these lines in the publish log:
+
+```text
+PackExcelAddInNativeAOT:   ->  Updating resource: Type: PROPERTY, Name: __MAIN___ORIGINAL_DLL_FILE_NAME, Length: 34
+PackExcelAddInNativeAOT:   ->  Updating resource: Type: NATIVE_ASSEMBLY, Name: __MAIN__, Length: 5226496
+```
+
+The `NATIVE_ASSEMBLY __MAIN__` resource is the AOT-compiled DLL, byte-for-byte. At Excel load, the stub maps that resource and calls into it. This is the same packing pattern Excel-DNA uses for ordinary managed add-ins, but the embedded payload is a NativeAOT native DLL instead of an IL assembly.
+
+Practical consequences:
+
+- **Sign the XLL**, not the AOT-compiled DLL. The XLL is the deliverable; the standalone DLL is never invoked by Excel directly.
+- **Ship only the XLL** in installers/MSIs. The intermediate `native/` and unwrapped `publish/<AssemblyName>.dll` are not redistributables.
+- The XLL's PE entry does not land in user UDF code. Anyone disassembling or symbolicating the XLL first hits the loader stub; the AOT-compiled code lives behind the resource extraction. PDB symbols for the user's code correspond to the embedded native DLL, not directly to the XLL byte layout.
+- Strings emitted by the Excel-DNA NativeAOT integration (e.g. `ExcelDna`, `ManagedHost`, `XlAutoOpen`) appear in both the AOT-compiled DLL and the XLL because the integration code is statically linked into the AOT image. Their presence in either file is not a useful signal about which artifact you are looking at.
 
 ## Package layout and version rules
 
@@ -365,6 +388,7 @@ A NativeAOT preview add-in should not pass release review until these checks suc
 | Symptom | Likely cause | Response |
 |---|---|---|
 | `ExcelFunction` attribute not found | missing `using ExcelDna.Integration` or wrong package layout | start from the minimal NativeAOT-only project |
+| Publish fails in `Microsoft.NETCore.Native.targets` with `MSB3073 ... exited with code 123` and "filename, directory name, or volume label syntax is incorrect" | `vswhere.exe` not on `PATH`; the AOT linker cannot locate the MSVC toolchain | run from a Visual Studio Developer Command Prompt, or add `C:\Program Files (x86)\Microsoft Visual Studio\Installer` to `PATH` for the publish session |
 | `Loading ExcelDna.ManagedHost failed` | mixed package references, wrong output, preview packaging issue, or trying to load non-published artifact | use NativeAOT package only, publish, load `*-AddIn64.xll` from publish output |
 | `File does not exist (Xll32FilePath)` or missing `ExcelDna.xll` | preview `ExcelDnaToolsPath` conflict when packages are mixed | avoid mixing packages or apply the temporary tools-path workaround |
 | AOT warning `IL3050` | runtime code generation or `RequiresDynamicCode` API | remove/replace dynamic pattern, use source generation/static code, retest |

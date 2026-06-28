@@ -3,6 +3,7 @@
 ## Contents
 
 - [Ribbon support](#ribbon-support)
+- [Detailed Ribbon XML and callbacks](#detailed-ribbon-xml-and-callbacks)
 - [Ribbon debugging](#ribbon-debugging)
 - [Accessing Excel object model from UI callbacks](#accessing-excel-object-model-from-ui-callbacks)
 - [Custom task panes](#custom-task-panes)
@@ -54,6 +55,12 @@ Rules:
 - Use the correct Office CustomUI XML namespace.
 - Keep callback names stable.
 - Use ribbon callbacks for user actions, not worksheet UDFs.
+
+## Detailed Ribbon XML and callbacks
+
+For full Office Ribbon control lists, attribute/callback names, and C#, VB.NET, VBA, and C++ callback signatures, open `references/12_ribbon_xml_callback_reference.md`.
+
+Important routing rule: Excel-DNA hosts the ribbon COM add-in, but the XML schema and callback signatures are Office Custom UI contracts. Use the Excel-DNA rules here for class shape, loading, packaging, and Excel object model access; use the detailed reference for control-specific callback signatures such as `getPressed`, `getItemCount`, `onChange`, `getContent`, `loadImage`, and `onLoad`.
 
 ## Ribbon debugging
 

@@ -35,5 +35,12 @@ __pycache__/
 # Local Codex activation links or mirrors
 .agents/
 
-# Local Claude Code settings
+# Local Codex workspace state
+.codex/
+
+# Local Claude Code settings and cache
 .claude/settings.local.json
+.claude/settings.*.local.json
+.claude/.cache/
+.claude/logs/
+.claude/tmp/
